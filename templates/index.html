@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Guide</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Research Guide</h1>
+        
+        <!-- Search Form -->
+        <form method="GET" action="/">
+            <input type="text" name="query" placeholder="Enter search query" value="{{ query }}" required>
+            <button type="submit">Search</button>
+        </form>
+
+        {% if papers %}
+        <h2>Results for "{{ query }}"</h2>
+        <ul>
+            {% for paper in papers %}
+            <li>
+                <h3>{{ paper['title'] }}</h3>
+                <p>{{ paper['summary'] }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        {% if query %}
+        <p>No papers found for "{{ query }}". Try a different search.</p>
+        {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
