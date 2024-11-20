@@ -1,32 +1,28 @@
 import os
-from utils import fetch_kaggle_datasets  # Assuming you have a utility to fetch papers
 from flask import Flask, request, render_template
 from routes.search import search_blueprint
 from routes.summarize import summarize_blueprint
 
+# Set the full path for templates
 template_folder = os.path.join(os.getcwd(), 'templates')
 
 app = Flask(__name__, template_folder=template_folder)
 
-# Register blueprints
+# Register Blueprints
 app.register_blueprint(search_blueprint, url_prefix="/search")
+app.register_blueprint(summarize_blueprint, url_prefix="/summarize")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    query = request.args.get("query") if request.method == "GET" else request.form.get("query")
-    datasets = []
+    query = request.form.get("query") if request.method == "POST" else None
+    papers = []
 
     if query:
-        response = app.test_client().get(f"/search?query={query}")
-        print(response.status_code)  # Log the status code
-        print(response.data)         # Log the raw data response
+        # Importing fetch_papers dynamically
+        from utils import fetch_papers  
+        papers = fetch_papers(query)
 
-        if response.is_json:         # Check if the response is valid JSON
-            datasets = response.json.get("datasets", [])
-        else:
-            print("Error: Response is not JSON")  # Debug if response isn't JSON
-
-    return render_template("index.html", query=query, datasets=datasets)
+    return render_template("index.html", query=query, papers=papers)
 
 if __name__ == "__main__":
     app.run(debug=True)

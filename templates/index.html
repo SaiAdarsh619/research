@@ -8,10 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Research Guide</h1>
+        <h1>Research Guide: </h1>
         
         <!-- Search Form -->
-        <form method="GET" action="/">
+        <form method="POST" action="/">
             <input type="text" name="query" placeholder="Enter search query" value="{{ query }}" required>
             <button type="submit">Search</button>
         </form>
@@ -22,7 +22,10 @@
             {% for paper in papers %}
             <li>
                 <h3>{{ paper['title'] }}</h3>
-                <p>{{ paper['summary'] }}</p>
+                <p><strong>Summary:</strong> {{ paper['summary'] }}</p>
+                <p><strong>Authors:</strong> {{ paper['authors'] }}</p>
+                <p><strong>Organization:</strong> {{ paper['organization'] }}</p>
+                <p><strong>Published Date:</strong> {{ paper['published_date'] }}</p>
             </li>
             {% endfor %}
         </ul>
