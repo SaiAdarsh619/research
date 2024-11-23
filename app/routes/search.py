@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from utils import fetch_papers, build_search_query
+from utils import fetch_papers_details, build_search_query
 
 from flask import Blueprint, request, render_template
 import requests
