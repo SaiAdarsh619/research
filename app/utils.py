@@ -50,41 +50,45 @@ def build_search_query(form_data):
 import requests
 from xml.etree import ElementTree
 
-def fetch_paper_details(arxiv_id):
-    arxiv_url = f'https://export.arxiv.org/api/query?id_list={arxiv_id}'
+def fetch_papers(query, field):
+    # Build the correct search query
+    field_map = {
+        "all": "all",
+        "title": "ti",
+        "author": "au",
+        "abstract": "abs",
+    }
+    search_field = field_map.get(field, "all")
+    search_query = f"{search_field}:{query}"
 
-    try:
-        response = requests.get(arxiv_url)
-        response.raise_for_status()
+    # ArXiv API URL
+    arxiv_url = f"http://export.arxiv.org/api/query?search_query={search_query}&start=0&max_results=10"
 
-        root = ElementTree.fromstring(response.text)
-        entry = root.findall("{http://www.w3.org/2005/Atom}entry")[0]
+    response = requests.get(arxiv_url)
+    response.raise_for_status()
 
-        title = entry.find("{http://www.w3.org/2005/Atom}title").text
-        summary = entry.find("{http://www.w3.org/2005/Atom}summary").text
+    # Parse response
+    root = ElementTree.fromstring(response.text)
+    papers = []
+    for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
+        paper_id = entry.find("{http://www.w3.org/2005/Atom}id").text.split("/")[-1]
+        title = entry.find("{http://www.w3.org/2005/Atom}title").text.strip()
+        summary = entry.find("{http://www.w3.org/2005/Atom}summary").text.strip()
+        authors = [
+            author.find("{http://www.w3.org/2005/Atom}name").text.strip()
+            for author in entry.findall("{http://www.w3.org/2005/Atom}author")
+        ]
         published = entry.find("{http://www.w3.org/2005/Atom}published").text
-        author_elems = entry.findall("{http://www.w3.org/2005/Atom}author")
-        authors = ", ".join(a.find("{http://www.w3.org/2005/Atom}name").text for a in author_elems if a.find("{http://www.w3.org/2005/Atom}name") is not None)
-        organization = entry.find("{http://www.w3.org/2005/Atom}arxiv:affiliation", namespaces={"arxiv": "http://arxiv.org/schemas/atom"})
-        organization = organization.text if organization is not None else "Unknown Organization"
 
-        # Extract the full content (abstract) or any other part of the paper
-        # arXiv does not give HTML content, but you can show the abstract and other metadata
-        paper = {
+        papers.append({
+            "id": paper_id,
             "title": title,
             "summary": summary,
-            "authors": authors,
+            "authors": ", ".join(authors),
             "published": published,
-            "organization": organization,
-            "arxiv_id": arxiv_id
-        }
+        })
 
-        return paper
-
-    except Exception as e:
-        print(f"Error fetching paper details: {e}")
-        return None
-
+    return papers
 def parse_arxiv_response(response_text):
     from xml.etree import ElementTree
 
