@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ paper.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Back button -->
+        <a href="{{ url_for('search.search') }}?query={{ previous_query }}" class="btn btn-secondary">Back to Search Results</a>
+        
+        <h1>{{ paper.title }}</h1>
+        <p><strong>Authors:</strong> {{ paper.authors }}</p>
+        <p><strong>Published:</strong> {{ paper.published }}</p>
+        <p><strong>Organization:</strong> {{ paper.organization }}</p>
+
+        <h3>Abstract</h3>
+        <p>{{ paper.summary }}</p>
+
+        <!-- Back button at the bottom -->
+        <a href="{{ url_for('search.search') }}?query={{ previous_query }}" class="btn btn-secondary">Back to Search Results</a>
+    </div>
+
+</body>
+</html>

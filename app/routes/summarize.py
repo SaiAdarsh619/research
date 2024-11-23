@@ -1,25 +1,18 @@
 from flask import Blueprint, request, jsonify
-from transformers import pipeline
+from utils import summarize_text
 
 summarize_blueprint = Blueprint('summarize', __name__)
 
-# Initialize summarizer with a specific model
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-
 @summarize_blueprint.route("/", methods=["POST"])
-def summarize_text(text):
-    word_count = len(text.split())
-    
-    # Set dynamic max_length based on input length
-    max_len = min(150, word_count - 1)  # Ensure max_length is shorter than input
-    min_len = max(40, int(0.3 * word_count))  # Dynamic min_length as 30% of input length
+def summarize():
+    # Expecting JSON input with a list of texts to summarize
+    data = request.get_json()
+    if "texts" not in data or not isinstance(data["texts"], list):
+        return jsonify({"error": "Invalid input. Provide a list of texts to summarize."}), 400
 
-    if word_count < 30:  # Skip summarization for very short text
-        return text
-
+    texts = data["texts"]
     try:
-        summary = summarizer(text, max_length=max_len, min_length=min_len, do_sample=False)
-        return summary[0]["summary_text"]
+        summaries = summarize_text(texts)  # Summarize the list of texts
+        return jsonify({"summaries": summaries})
     except Exception as e:
-        print(f"Error during summarization: {e}")
-        return text  # Return original text if summarization fails
+        return jsonify({"error": f"An error occurred: {e}"}), 500

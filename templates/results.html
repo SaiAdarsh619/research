@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results</h1>
+
+        {% for paper in papers %}
+            <div class="paper">
+                <h3>{{ paper.title }}</h3>
+                <p><strong>Authors:</strong> {{ paper.authors }}</p>
+                <p><strong>Published:</strong> {{ paper.published }}</p>
+                <p><strong>Organization:</strong> {{ paper.organization }}</p>
+                <a href="{{ url_for('article.article', arxiv_id=paper.id) }}?query={{ request.form.get('query') }}" class="btn btn-primary">Read Full Paper</a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

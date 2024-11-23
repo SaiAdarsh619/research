@@ -1,39 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Guide</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Research Guide: </h1>
-        
-        <!-- Search Form -->
-        <form method="POST" action="/">
-            <input type="text" name="query" placeholder="Enter search query" value="{{ query }}" required>
-            <button type="submit">Search</button>
-        </form>
+{% extends 'layout.html' %}
 
-        {% if papers %}
-        <h2>Results for "{{ query }}"</h2>
-        <ul>
-            {% for paper in papers %}
-            <li>
-                <h3>{{ paper['title'] }}</h3>
-                <p><strong>Summary:</strong> {{ paper['summary'] }}</p>
-                <p><strong>Authors:</strong> {{ paper['authors'] }}</p>
-                <p><strong>Organization:</strong> {{ paper['organization'] }}</p>
-                <p><strong>Published Date:</strong> {{ paper['published_date'] }}</p>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        {% if query %}
-        <p>No papers found for "{{ query }}". Try a different search.</p>
-        {% endif %}
-        {% endif %}
-    </div>
-</body>
-</html>
+{% block content %}
+    <h1 class="text-center mb-4">Search Research Papers</h1>
+    <form action="/search" method="POST">
+        <div class="mb-3">
+            <label for="query" class="form-label">Search for Papers</label>
+            <input type="text" id="query" name="query" class="form-control" placeholder="Enter keywords" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="search_type" class="form-label">Search Type</label>
+            <select id="search_type" name="search_type" class="form-select">
+                <option value="all" selected="selected">All Fields</option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="abstract">Abstract</option>
+                <option value="comments">Comments</option>
+                <option value="journal_ref">Journal Reference</option>
+                <option value="acm_class">ACM Classification</option>
+                <option value="msc_class">MSC Classification</option>
+                <option value="report_num">Report Number</option>
+                <option value="paper_id">arXiv Identifier</option>
+                <option value="doi">DOI</option>
+                <option value="orcid">ORCID</option>
+                <option value="author_id">arXiv Author ID</option>
+                <option value="help">Help Pages</option>
+                <option value="full_text">Full Text</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+    </form>
+{% endblock %}
