@@ -50,74 +50,33 @@ def build_search_query(form_data):
 import requests
 from xml.etree import ElementTree
 
-def fetch_papers(query, field):
-    # Build the correct search query
-    field_map = {
-        "all": "all",
-        "title": "ti",
-        "author": "au",
-        "abstract": "abs",
-    }
-    search_field = field_map.get(field, "all")
-    search_query = f"{search_field}:{query}"
+ARXIV_API_URL = "http://export.arxiv.org/api/query"
 
-    # ArXiv API URL
-    arxiv_url = f"http://export.arxiv.org/api/query?search_query={search_query}&start=0&max_results=10"
+def fetch_papers(query, search_field):
+    # Build the search query
+    query_param = f"{search_field}:{query}" if search_field != "all" else query
+    url = f"{ARXIV_API_URL}?search_query={query_param}&start=0&max_results=5"
 
-    response = requests.get(arxiv_url)
+    response = requests.get(url)
     response.raise_for_status()
 
-    # Parse response
-    root = ElementTree.fromstring(response.text)
-    papers = []
-    for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
-        paper_id = entry.find("{http://www.w3.org/2005/Atom}id").text.split("/")[-1]
-        title = entry.find("{http://www.w3.org/2005/Atom}title").text.strip()
-        summary = entry.find("{http://www.w3.org/2005/Atom}summary").text.strip()
-        authors = [
-            author.find("{http://www.w3.org/2005/Atom}name").text.strip()
-            for author in entry.findall("{http://www.w3.org/2005/Atom}author")
-        ]
-        published = entry.find("{http://www.w3.org/2005/Atom}published").text
+    return parse_arxiv_response(response.text)
 
-        papers.append({
-            "id": paper_id,
-            "title": title,
-            "summary": summary,
-            "authors": ", ".join(authors),
-            "published": published,
-        })
-
-    return papers
 def parse_arxiv_response(response_text):
-    from xml.etree import ElementTree
-
     root = ElementTree.fromstring(response_text)
     papers = []
+
     for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
-        title = entry.find("{http://www.w3.org/2005/Atom}title").text
-        summary = entry.find("{http://www.w3.org/2005/Atom}summary").text
-        published = entry.find("{http://www.w3.org/2005/Atom}published").text
-        author_elems = entry.findall("{http://www.w3.org/2005/Atom}author")
-        authors = ", ".join(a.find("{http://www.w3.org/2005/Atom}name").text for a in author_elems if a.find("{http://www.w3.org/2005/Atom}name") is not None)
-        organization = entry.find("{http://www.w3.org/2005/Atom}arxiv:affiliation", namespaces={"arxiv": "http://arxiv.org/schemas/atom"})
-        organization = organization.text if organization is not None else "Unknown Organization"
-
-        # Extract the arXiv ID from the entry's id tag
-        arxiv_id = entry.find("{http://www.w3.org/2005/Atom}id").text.split('/')[-1]  # This should extract the unique identifier (e.g., 1234.5678)
-
-        papers.append({
-            "title": title,
-            "summary": None,  # Placeholder for batch summarization
-            "authors": authors,
-            "published": published,
-            "organization": organization,
-            "id": arxiv_id  # Store the extracted arXiv ID here
-        })
-
-    # Summarize in batch
-    summaries = summarize_text([paper['summary'] for paper in papers])
-    for paper, summary in zip(papers, summaries):
-        paper['summary'] = summary
+        paper = {
+            "title": entry.find("{http://www.w3.org/2005/Atom}title").text,
+            "summary": entry.find("{http://www.w3.org/2005/Atom}summary").text,
+            "authors": ", ".join(
+                author.find("{http://www.w3.org/2005/Atom}name").text
+                for author in entry.findall("{http://www.w3.org/2005/Atom}author")
+            ),
+            "published": entry.find("{http://www.w3.org/2005/Atom}published").text,
+            "id": entry.find("{http://www.w3.org/2005/Atom}id").text,
+        }
+        papers.append(paper)
 
     return papers

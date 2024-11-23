@@ -4,21 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .error {
+            color: red;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        .paper {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .paper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .paper h2 {
+            font-size: 20px;
+            margin: 0 0 10px;
+            color: #1a73e8;
+        }
+
+        .paper h2 a {
+            text-decoration: none;
+            color: #1a73e8;
+        }
+
+        .paper h2 a:hover {
+            text-decoration: underline;
+        }
+
+        .paper p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .paper .authors {
+            font-style: italic;
+            color: #555;
+        }
+
+        .paper .published {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .read-more {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #1a73e8;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .read-more:hover {
+            background-color: #155ab2;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>arXiv Search Results</h1>
+    </header>
     <div class="container">
-        <h1>Search Results</h1>
-
-        {% for paper in papers %}
-            <div class="paper">
-                <h3>{{ paper.title }}</h3>
-                <p><strong>Authors:</strong> {{ paper.authors }}</p>
-                <p><strong>Published:</strong> {{ paper.published }}</p>
-                <p><strong>Organization:</strong> {{ paper.organization }}</p>
-                <a href="{{ url_for('article.article', arxiv_id=paper.id) }}?query={{ request.form.get('query') }}" class="btn btn-primary">Read Full Paper</a>
-            </div>
-        {% endfor %}
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% elif papers %}
+            {% for paper in papers %}
+                <div class="paper">
+                    <h2><a href="/view-article/{{ paper.id }}" target="_blank">{{ paper.title }}</a></h2>
+                    <p class="authors"><strong>Authors:</strong> {{ paper.authors }}</p>
+                    <p class="published"><strong>Published:</strong> {{ paper.published }}</p>
+                    <p>{{ paper.summary }}</p>
+                    <a class="read-more" href="/view-article/{{ paper.id }}">Read Full Page</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="error">No results found.</p>
+        {% endif %}
     </div>
+    <footer>
+        <p>&copy; {{ current_year }} arXiv Search | Built with Flask</p>
+    </footer>
 </body>
 </html>
